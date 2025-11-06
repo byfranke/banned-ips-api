@@ -139,6 +139,7 @@ def check_ip(ip):
         if entry['ip'] == ip:
             return entry
     return None
+```
 
 # Exemplo de uso
 result = check_ip('192.168.1.1')
