@@ -1,24 +1,17 @@
 # Documentação da API: byFranke Banned IPs
 
-A API fornece dados detalhados, incluindo pontuação de risco (abuseConfidenceScore), geolocalização, provedor (ISP) e tipo de uso, permitindo a integração direta com sistemas de segurança como firewalls, SIEMs e outras ferramentas de análise.
+A API fornece dados detalhados sobre endereços IP maliciosos, incluindo pontuação de risco (abuseConfidenceScore), geolocalização, provedor (ISP) e tipo de uso. Ideal para integração com sistemas de segurança como firewalls, SIEMs e outras ferramentas de análise.
 
-<p align="center">
-  <a href="https://www.youtube.com/watch?v=l4Jdnefvzb0&lc=">
-    <img src="https://img.youtube.com/vi/l4Jdnefvzb0&lc=/maxresdefault.jpg" alt="Banned IPs | Video de Demonstração" width="600">
-  </a>
-</p>
+[![Banned IPs | Video de Demonstração](https://img.youtube.com/vi/l4Jdnefvzb0/maxresdefault.jpg)](https://www.youtube.com/watch?v=l4Jdnefvzb0)
 
+## Endpoint e Uso da API
 
-
-## Endpoint
-
-Recupera a lista de endereços IP banidos e seus metadados de inteligência.
-
-```
+```bash
 curl "https://byfranke.com/api/v1/banned-ips.json"
 ```
 
-## Formato de Resposta
+### Formato de Resposta
+
 ```json
 [
   {
@@ -34,81 +27,157 @@ curl "https://byfranke.com/api/v1/banned-ips.json"
 ]
 ```
 
-## Exemplos Rápidos
+### Campos da API
 
-### cURL (Terminal)
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| ip | string | Endereço IP |
+| abuseConfidenceScore | int | Score de risco (0-100) |
+| totalReports | int | Número de denúncias |
+| country | string | Código do país (ISO) |
+| isp | string | Provedor de internet |
+| usageType | string | Tipo de uso do IP |
+| lastReportedAt | datetime | Último report |
+| checkedAt | datetime | Última verificação |
+
+### Níveis de Risco
+
+* **Crítico (100)**: Bloqueio imediato recomendado
+* **Alto (75-99)**: Monitorar e considerar bloqueio
+* **Médio (50-74)**: Atenção aumentada
+* **Baixo (<50)**: Monitoramento padrão
+
+## Script Auxiliar (banned-ips-hunter.sh)
+
+Este é um script interativo em bash para auxiliar na coleta e análise dos dados da API.
+
+### Instalação do Script
+
+Siga os passos abaixo para instalar o script auxiliar:
+
 ```bash
-# Buscar todos os IPs
-curl https://byfranke.com/api/v1/banned-ips.json
+# Clone o repositório
+git clone https://github.com/byfranke/banned-ips-api.git
+cd banned-ips-api
 
-# Contar total de IPs
-curl -s https://byfranke.com/api/v1/banned-ips.json | jq 'length'
+# Instale as dependências necessárias
+sudo apt update
+sudo apt install -y curl jq
 
-# Filtrar por país
+# Configure as permissões
+chmod +x banned-ips-hunter.sh
+```
+
+### Como Usar o Script
+
+Execute o script para entrar no modo interativo:
+
+```bash
+./banned-ips-hunter.sh
+```
+
+#### Visualização dos Resultados
+
+O script formata os resultados em tabelas claras e coloridas:
+
+* Níveis de risco identificados por cores (Vermelho: Crítico, Amarelo: Alto, Verde: Baixo)
+* Scores de abuso apresentados em uma escala de 0-100
+* Recomendações automáticas baseadas no nível de risco
+* Estatísticas detalhadas com distribuição por países e tipos de uso
+
+O menu oferece as seguintes funcionalidades:
+
+1. Listar apenas IPs
+2. Buscar IP específico
+3. Top IPs mais reportados
+4. Filtrar por país
+5. Filtrar por score mínimo
+6. Estatísticas gerais
+7. Exportar blocklist
+8. Atualizar dados da API
+
+#### Detalhes das Funcionalidades
+
+* **Busca de IP**: Análise completa com score de risco, reports, país, ISP e recomendações
+* **Top Reportados**: Lista os IPs mais reportados com detalhes (score, reports, país, ISP)
+* **Filtro por País**: Lista todos os IPs de um país específico
+* **Filtro por Score**: Lista IPs com score igual ou superior ao especificado
+* **Estatísticas**: Mostra distribuição por níveis de risco, top 5 países e tipos de uso
+* **Exportação**: Gera blocklists em TXT (IPs), CSV (detalhado) ou script iptables
+
+Os dados são mantidos em cache local por 1 hora para otimizar as consultas.
+
+O script mantém um cache local para otimizar as consultas. Para forçar uma atualização, use a opção correspondente no menu.
+
+### Consultas com cURL
+
+```bash
+# Consulta básica
+curl -s https://byfranke.com/api/v1/banned-ips.json | jq '.'
+
+# Filtrar por país (BR)
 curl -s https://byfranke.com/api/v1/banned-ips.json | jq '.[] | select(.country == "BR")'
 
 # Verificar IP específico
 curl -s https://byfranke.com/api/v1/banned-ips.json | jq '.[] | select(.ip == "192.168.1.1")'
+
+# Listar IPs críticos (score 100)
+curl -s https://byfranke.com/api/v1/banned-ips.json | jq '.[] | select(.abuseConfidenceScore == 100)'
 ```
 
-### Python
+### Exemplo em Python
+
 ```python
 import requests
 
-# Buscar dados
-response = requests.get('https://byfranke.com/api/v1/banned-ips.json')
-ips = response.json()
+def check_ip(ip):
+    response = requests.get('https://byfranke.com/api/v1/banned-ips.json')
+    data = response.json()
+    
+    # Procura o IP na lista
+    for entry in data:
+        if entry['ip'] == ip:
+            return entry
+    return None
 
-# Filtrar por score alto
-critical = [ip for ip in ips if ip['abuseConfidenceScore'] >= 90]
-print(f"IPs críticos: {len(critical)}")
+# Exemplo de uso
+result = check_ip('192.168.1.1')
+if result:
+    print(f"IP encontrado - Score: {result['abuseConfidenceScore']}")
+else:
+    print("IP não encontrado na lista")
+
+## Casos de Uso Comuns
+
+### Integração com Firewall Linux
+
+```bash
+# Bloquear IPs de alto risco (score >= 90)
+curl -s https://byfranke.com/api/v1/banned-ips.json | \
+jq -r '.[] | select(.abuseConfidenceScore >= 90) | .ip' | \
+while read ip; do
+    iptables -A INPUT -s $ip -j DROP
+done
 ```
 
-### PowerShell
-```powershell
-# Buscar e filtrar
-$ips = Invoke-RestMethod "https://byfranke.com/api/v1/banned-ips.json"
-$ips | Where-Object { $_.abuseConfidenceScore -ge 90 }
-```
+### Verificação em Lote
 
-### PHP
-```php
-$json = file_get_contents('https://byfranke.com/api/v1/banned-ips.json');
-$ips = json_decode($json, true);
-echo "Total: " . count($ips);
-```
+```python
+import requests
+import sys
 
-### JavaScript
-```javascript
-fetch('https://byfranke.com/api/v1/banned-ips.json')
-  .then(res => res.json())
-  .then(data => console.log(`Total: ${data.length}`));
-```
+def check_ips(ip_list):
+    response = requests.get('https://byfranke.com/api/v1/banned-ips.json')
+    banned = {entry['ip']: entry for entry in response.json()}
+    
+    for ip in ip_list:
+        if ip in banned:
+            data = banned[ip]
+            print(f"[!] {ip} - Score: {data['abuseConfidenceScore']} - País: {data['country']}")
+        else:
+            print(f"[✓] {ip} - Não encontrado na lista")
 
-## Arquivos de Exemplo
-
-- **examples_python.py** - Exemplos completos em Python
-- **examples_bash.sh** - Scripts em Bash com cURL e jq
-- **examples_powershell.ps1** - Scripts para PowerShell
-- **examples_php.php** - Implementações em PHP
-- **examples_javascript.js** - Código JavaScript/Node.js
-
-## Casos de Uso
-
-### 1. Verificação de IP Individual
-Verifica se um IP específico está na lista de banidos.
-
-### 2. Filtros por País
-Obtém todos os IPs maliciosos de um país específico.
-
-### 3. Score de Risco
-Filtra IPs baseado no nível de ameaça (0-100).
-
-### 4. Integração com Firewall
-Exporta lista de IPs para bloqueio automático.
-
-### 5. Relatórios de Threat Intelligence
-Gera estatísticas e análises sobre as ameaças.
+# Exemplo: check_ips(['1.2.3.4', '5.6.7.8'])
 
 ## Campos Disponíveis
 
@@ -125,10 +194,10 @@ Gera estatísticas e análises sobre as ameaças.
 
 ## Níveis de Risco
 
-- **Crítico (100)**: Bloqueio imediato recomendado
-- **Alto (75-99)**: Monitorar e considerar bloqueio
-- **Médio (50-74)**: Atenção aumentada
-- **Baixo (<50)**: Monitoramento padrão
+* **Crítico (100)**: Bloqueio imediato recomendado
+* **Alto (75-99)**: Monitorar e considerar bloqueio
+* **Médio (50-74)**: Atenção aumentada
+* **Baixo (<50)**: Monitoramento padrão
 
 ## Dicas de Implementação
 
@@ -140,11 +209,11 @@ Gera estatísticas e análises sobre as ameaças.
 
 ## Segurança
 
-- Use HTTPS sempre
-- Valide os dados recebidos
-- Implemente timeout nas requisições
-- Considere usar proxy/cache local
-- Automatize o bloqueio com cautela
+* Use HTTPS sempre
+* Valide os dados recebidos
+* Implemente timeout nas requisições
+* Considere usar proxy/cache local
+* Automatize o bloqueio com cautela
 
 ## Exemplos de Integração
 
@@ -157,31 +226,8 @@ for ip in $(curl -s https://byfranke.com/api/v1/banned-ips.json | \
 done
 ```
 
-### Windows Firewall (PowerShell)
-```powershell
-$ips = Invoke-RestMethod "https://byfranke.com/api/v1/banned-ips.json"
-$critical = $ips | Where-Object { $_.abuseConfidenceScore -eq 100 }
-foreach ($ip in $critical) {
-    New-NetFirewallRule -DisplayName "Block_$($ip.ip)" -Direction Inbound -Action Block -RemoteAddress $ip.ip
-}
-```
-
-### Apache .htaccess
-```php
-<?php
-// Gerar arquivo .htaccess
-$ips = json_decode(file_get_contents('https://byfranke.com/api/v1/banned-ips.json'), true);
-$htaccess = "";
-foreach ($ips as $ip) {
-    if ($ip['abuseConfidenceScore'] >= 90) {
-        $htaccess .= "Deny from {$ip['ip']}\n";
-    }
-}
-file_put_contents('.htaccess', $htaccess);
-?>
-```
-
-
 ---
 
-**Desenvolvido para profissionais de Cybersecurity, Threat Intelligence e Threat Hunting**
+## Sobre
+
+Desenvolvido por byFranke para profissionais de Cybersecurity e Threat Intelligence.
