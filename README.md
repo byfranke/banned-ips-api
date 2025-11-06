@@ -179,8 +179,6 @@ def check_ips(ip_list):
             print(f"[✓] {ip} - Não encontrado na lista")
 ```
 
-# Exemplo: check_ips(['1.2.3.4', '5.6.7.8'])
-
 ## Campos Disponíveis
 
 | Campo | Tipo | Descrição |
@@ -232,4 +230,4 @@ done
 
 ## Sobre
 
-Desenvolvido por byFranke para profissionais de Cybersecurity e Threat Intelligence.
+Desenvolvido por [byFranke](https://byfranke.com/)
