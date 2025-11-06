@@ -1,4 +1,4 @@
-# Documentação da API: byFranke Banned IPs
+# Documentação da API: Banned IPs
 
 A API fornece dados detalhados sobre endereços IP maliciosos, incluindo pontuação de risco (abuseConfidenceScore), geolocalização, provedor (ISP) e tipo de uso. Ideal para integração com sistemas de segurança como firewalls, SIEMs e outras ferramentas de análise.
 
