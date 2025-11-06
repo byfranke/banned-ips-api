@@ -176,6 +176,7 @@ def check_ips(ip_list):
             print(f"[!] {ip} - Score: {data['abuseConfidenceScore']} - País: {data['country']}")
         else:
             print(f"[✓] {ip} - Não encontrado na lista")
+```
 
 # Exemplo: check_ips(['1.2.3.4', '5.6.7.8'])
 
