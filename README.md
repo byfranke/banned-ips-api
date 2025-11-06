@@ -4,7 +4,7 @@ A API fornece dados detalhados, incluindo pontuação de risco (abuseConfidenceS
 
 <p align="center">
   <a href="https://www.youtube.com/watch?v=l4Jdnefvzb0&lc=">
-    <img src="https://img.youtube.com/vi/l4Jdnefvzb0&lc/maxresdefault.jpg" alt="Banned IPs | Video de Demonstração" width="600">
+    <img src="https://img.youtube.com/vi/l4Jdnefvzb0&lc=/maxresdefault.jpg" alt="Banned IPs | Video de Demonstração" width="600">
   </a>
 </p>
 
